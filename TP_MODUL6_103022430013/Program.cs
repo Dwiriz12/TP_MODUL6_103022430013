@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
-
+using static System.Runtime.InteropServices.JavaScript.JSType;
 public class SayaMusicTrack
 {
     private int id;
@@ -10,39 +13,77 @@ public class SayaMusicTrack
 
     public SayaMusicTrack (string title)
     {
-    this.title = title;
-    this.playCount = 0;
+        Debug.Assert(title != null, "Judul track tidak berupa null");
+        Debug.Assert(title.Length <= 100, "Judul track memiliki panjang maksimal 100 karakter");
 
-    Random random = new Random(); 
-    this.id = random.Next(10000, 99999);  
-    }
+        if (title == null || title.Length > 100)
+        {
+            Console.WriteLine("Error: Judul Tidak Valid!");
+            return;
+        }
 
+        this.title = title;
+        this.playCount = 0;
+
+      
+        Random random = new Random(); 
+        this.id = random.Next(10000, 99999);  
+
+        }
     public void IncreasePlayCount (int count)
     {
-    playCount = playCount + count;
-    }
+        Debug.Assert(count <= 10000000, "Maksimal 10.000.000");
 
+        try
+        {
+            checked
+            {
+                playCount = playCount + count;
+            }
+
+        }
+
+        catch (OverflowException)
+        {
+            Console.WriteLine("Terjadi Overflow!");
+        }
+    }
     public void PrintTrackDetails()
     {
-    Console.WriteLine("ID: " + id);
-    Console.WriteLine("Title: " + title);
-    Console.WriteLine("Play Count: " + playCount);
+        Console.WriteLine("ID: " + id);
+        Console.WriteLine("Title: " + title);
+        Console.WriteLine("Play Count: " + playCount);
         Console.WriteLine("=====================");
     }
 }
+
+
 
 
 public class Program
 {
     static void Main(string[] args)
     {
-        SayaMusicTrack lagu1 = new SayaMusicTrack("Young and Beautiful");
-        SayaMusicTrack lagu2 = new SayaMusicTrack("Flashlight");
+        try { 
+            SayaMusicTrack lagu1 = new SayaMusicTrack("Young and Beautiful");
+            lagu1.IncreasePlayCount(5000000);
+            lagu1.PrintTrackDetails();
 
-        lagu1.IncreasePlayCount(10);
-        lagu2.IncreasePlayCount(20);
+            //Ini judul yang lebih dari 100 karakter
+            //SayaMusicTrack lagu2 = new SayaMusicTrack("Aihh aku mencoba untuk menulis judul yang sangat
+            //                       panjang atau lebih dari 100 apakah bisa berjalan programnya");
 
-        lagu1.PrintTrackDetails();
-        lagu2.PrintTrackDetails();
+            SayaMusicTrack lagu3 = new SayaMusicTrack("Overflow Test");
+
+            for (int i = 0; i < 300; i++)
+            {
+                lagu3.IncreasePlayCount(10000000);
+            }
+            lagu3.PrintTrackDetails();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error: " + e.Message);
+        }
     }
 }
